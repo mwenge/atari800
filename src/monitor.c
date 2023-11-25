@@ -1513,24 +1513,6 @@ static void monitor_breakpoints(void)
 #endif /* MONITOR_BREAKPOINTS */
 
 #ifdef MONITOR_MEMORY_WATCH
-/* Enables/disables breakpoint in a specific program counter value, fetched
-   from command line. */
-static void monitor_memory_watch(void)
-{
-	int addr_valid = get_hex(&MONITOR_memory_watch_bpc);
-	if (addr_valid)
-	{
-		if (MONITOR_memory_watch_bpc >= 0xd000 && MONITOR_memory_watch_bpc <= 0xd7ff)
-			printf("Memory Watchpoint disabled\n");
-		else
-			printf("Memory Watchpoint set at PC=%04X\n", MONITOR_memory_watch_bpc);
-	}
-	else
-	{
-		printf("Memory Watchpoint is at PC=%04X\n", MONITOR_memory_watch_bpc);
-	}
-}
-
 /* Opens/closes the memory trace file. */
 static void set_memory_watch_file(char const *filename)
 {
@@ -3722,46 +3704,38 @@ void MONITOR_MemoryWatchBPC(char *arg)
 	MONITOR_memory_watch_bpc = addr;
 }
 
-/* called from atari.c, for -bpc CLI arg. */
-void MONITOR_MemoryWatch(char *arg)
-{
-	UWORD addr = 0xd000;
-	parse_hex(arg, &addr); /* XXX error message on bad arg? */
-	MONITOR_memory_watch_addr = addr;
-}
-
-void MONITOR_MemoryWatchLen(int len)
-{
-	MONITOR_memory_watch_len = len;
-}
-
 void MONITOR_MemoryWatchFile(char const *filename)
 {
     set_memory_watch_file(filename);
 }
 
+typedef struct {
+	UWORD from_addr;
+	UWORD to_addr;
+} from_to_addr;
+
 /* Write memory contents to file. */
 void MONITOR_WriteMemory(FILE *fp)
 {
-	int count = MONITOR_memory_watch_len;
-    UWORD addr = MONITOR_memory_watch_addr;
+    static const from_to_addr addresses[] = {
+        {0x8280, 0x9EA0},
+        {0x0000, 0x0000}
+    };
+	const from_to_addr *p = NULL;
+    for (p = addresses; p->to_addr != 0x0000; p++) {
+        UWORD from_addr = p->from_addr;
 
-	if (!fp || !addr || !count)
-		return;
-
-	do {
-		int i;
-		fprintf(fp, "%04X: ", addr);
-		for (i = 0; i < 16; i++) {
-			fprintf(fp, "%02X ", MEMORY_SafeGetByte(addr));
-			(addr)++;
-            count--;
-        }
-		fputs("\n",fp);
-	} while (count > 0);
+        do {
+            int j;
+            fprintf(fp, "%04X: ", from_addr);
+            for (j = 0; j < 80; j++) {
+                fprintf(fp, "%02X ", MEMORY_SafeGetByte(from_addr));
+                (from_addr)++;
+            }
+            fputs("\n",fp);
+        } while (from_addr < p->to_addr);
+    }
 }
-
-
 #endif
 
 int MONITOR_Run(void)
