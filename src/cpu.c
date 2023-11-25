@@ -649,6 +649,21 @@ void CPU_GO(int limit)
 		}
 #endif /* MONITOR_BREAK */
 
+#ifdef MONITOR_MEMORY_WATCH
+		if (MONITOR_memory_watch_bpc == GET_PC() && MONITOR_memory_watch_file != NULL) {
+			MONITOR_ShowState(MONITOR_memory_watch_file, GET_PC(), A, X, Y, S,
+				(N & 0x80) ? 'N' : '-',
+#ifndef NO_V_FLAG_VARIABLE
+				V ? 'V' : '-',
+#else
+				(CPU_regP & CPU_V_FLAG) ? 'V' : '-',
+#endif
+				(Z == 0) ? 'Z' : '-',
+				(C != 0) ? 'C' : '-');
+      MONITOR_WriteMemory(MONITOR_memory_watch_file);
+		}
+#endif /* MONITOR_MEMORY_WATCH */
+
 #if defined(WRAP_64K) && !defined(PC_PTR)
 		MEMORY_mem[0x10000] = MEMORY_mem[0];
 #endif

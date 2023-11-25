@@ -26,6 +26,18 @@ extern UBYTE MONITOR_break_brk;
 extern int MONITOR_ret_nesting;
 #endif
 
+#ifdef MONITOR_MEMORY_WATCH
+void MONITOR_MemoryWatchBPC(char *arg);
+void MONITOR_MemoryWatch(char *arg);
+void MONITOR_MemoryWatchLen(int len);
+void MONITOR_MemoryWatchFile(char const *filename);
+extern UWORD MONITOR_memory_watch_bpc;
+extern UWORD MONITOR_memory_watch_addr;
+extern int MONITOR_memory_watch_len;
+extern FILE *MONITOR_memory_watch_file;
+void MONITOR_WriteMemory(FILE *fp);
+#endif
+
 extern const UBYTE MONITOR_optype6502[256];
 
 void MONITOR_Exit(void);

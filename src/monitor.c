@@ -1127,6 +1127,13 @@ unsigned long MONITOR_coverage_insns;
 unsigned long MONITOR_coverage_cycles;
 #endif /* MONITOR_PROFILE */
 
+#ifdef MONITOR_MEMORY_WATCH
+UWORD MONITOR_memory_watch_bpc = 0xd000;
+UWORD MONITOR_memory_watch_addr = 0xd000;
+int MONITOR_memory_watch_len = 0;
+FILE *MONITOR_memory_watch_file = NULL;
+#endif
+
 #ifdef MONITOR_BREAK
 UWORD MONITOR_break_addr = 0xd000;
 UBYTE MONITOR_break_step = FALSE;
@@ -1504,6 +1511,44 @@ static void monitor_breakpoints(void)
 }
 
 #endif /* MONITOR_BREAKPOINTS */
+
+#ifdef MONITOR_MEMORY_WATCH
+/* Enables/disables breakpoint in a specific program counter value, fetched
+   from command line. */
+static void monitor_memory_watch(void)
+{
+	int addr_valid = get_hex(&MONITOR_memory_watch_bpc);
+	if (addr_valid)
+	{
+		if (MONITOR_memory_watch_bpc >= 0xd000 && MONITOR_memory_watch_bpc <= 0xd7ff)
+			printf("Memory Watchpoint disabled\n");
+		else
+			printf("Memory Watchpoint set at PC=%04X\n", MONITOR_memory_watch_bpc);
+	}
+	else
+	{
+		printf("Memory Watchpoint is at PC=%04X\n", MONITOR_memory_watch_bpc);
+	}
+}
+
+/* Opens/closes the memory trace file. */
+static void set_memory_watch_file(char const *filename)
+{
+	if (MONITOR_memory_watch_file != NULL) {
+		fclose(MONITOR_memory_watch_file);
+		printf("Memory Watch file closed\n");
+		MONITOR_memory_watch_file = NULL;
+	}
+	if (filename != NULL) {
+		MONITOR_memory_watch_file = fopen(filename, "w");
+		if (MONITOR_memory_watch_file != NULL)
+			printf("Memory Watch file open\n");
+		else
+			perror(filename);
+	}
+}
+
+#endif /* MONITOR_MEMORY_WATCH */
 
 #ifdef MONITOR_BREAK
 /* Enables/disables breakpoints on BRK according to the command line. */
@@ -3668,6 +3713,58 @@ void MONITOR_BPC(char *arg)
 }
 #endif
 
+#ifdef MONITOR_MEMORY_WATCH
+/* called from atari.c, for -bpc CLI arg. */
+void MONITOR_MemoryWatchBPC(char *arg)
+{
+	UWORD addr = 0xd000;
+	parse_hex(arg, &addr); /* XXX error message on bad arg? */
+	MONITOR_memory_watch_bpc = addr;
+}
+
+/* called from atari.c, for -bpc CLI arg. */
+void MONITOR_MemoryWatch(char *arg)
+{
+	UWORD addr = 0xd000;
+	parse_hex(arg, &addr); /* XXX error message on bad arg? */
+	MONITOR_memory_watch_addr = addr;
+}
+
+void MONITOR_MemoryWatchLen(int len)
+{
+	MONITOR_memory_watch_len = len;
+}
+
+void MONITOR_MemoryWatchFile(char const *filename)
+{
+    set_memory_watch_file(filename);
+}
+
+/* Write memory contents to file. */
+void MONITOR_WriteMemory(FILE *fp)
+{
+	int count = MONITOR_memory_watch_len;
+    UWORD addr = MONITOR_memory_watch_addr;
+
+	if (!fp || !addr || !count)
+		return;
+
+	do {
+		int i;
+		fprintf(fp, "%04X: ", addr);
+		for (i = 0; i < 16; i++) {
+			fprintf(fp, "%02X ", MEMORY_SafeGetByte(addr));
+			(addr)++;
+            count--;
+        }
+		fputs("\n",fp);
+        printf("count: %i\n", count);
+	} while (count > 0);
+}
+
+
+#endif
+
 int MONITOR_Run(void)
 {
 	UWORD addr;
@@ -3815,6 +3912,16 @@ int MONITOR_Run(void)
 			set_trace_file(filename);
 		}
 #endif /* MONITOR_TRACE */
+#ifdef MONITOR_MEMORY_WATCH
+		else if (strcmp(t, "MEMWATCHFILE") == 0) {
+			const char *filename = get_token();
+			set_memory_watch_file(filename);
+		}
+		else if (strcmp(t, "MEMWATCHADDR") == 0) {
+			const char *filename = get_token();
+			set_memory_watch_file(filename);
+		}
+#endif /* MONITOR_MEMORY_WATCH */
 #ifdef MONITOR_PROFILE
 		else if (strcmp(t, "PROFILE") == 0)
 			command_PROFILE();

@@ -687,6 +687,16 @@ int Atari800_Initialise(int *argc, char *argv[])
 			else if (strcmp(argv[i], "-bpc") == 0)
 				if (i_a) MONITOR_BPC(argv[++i]); else a_m = TRUE;
 #endif /* MONITOR_BREAK */
+#ifdef MONITOR_MEMORY_WATCH
+			else if (strcmp(argv[i], "-memwatchbpc") == 0)
+				if (i_a) MONITOR_MemoryWatchBPC(argv[++i]); else a_m = TRUE;
+			else if (strcmp(argv[i], "-memwatchaddr") == 0)
+				if (i_a) MONITOR_MemoryWatch(argv[++i]); else a_m = TRUE;
+			else if (strcmp(argv[i], "-memwatchfile") == 0)
+				if (i_a) MONITOR_MemoryWatchFile(argv[++i]); else a_m = TRUE;
+			else if (strcmp(argv[i], "-memwatchlen") == 0)
+				if (i_a) MONITOR_MemoryWatchLen(Util_sscandec(argv[++i])); else a_m = TRUE;
+#endif /* MONITOR_MEMORY_WATCH */
 			else {
 				/* all options known to main module tried but none matched */
 
