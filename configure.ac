@@ -892,6 +892,11 @@ else
               MONITOR_TRACE,[Define to activate TRACE command in monitor.]
              )
 
+    A8_OPTION(monitormemorywatch,no,
+              [Support MEMORY WATCH command in the monitor (default=OFF)],
+              MONITOR_MEMORY_WATCH,[Define to activate MEMORY WATCH command in monitor.]
+             )
+
     A8_OPTION(monitoransi,yes,
               [Support ANSI terminal control (default=ON)],
               MONITOR_ANSI,[Define to use ANSI terminal control in the monitor.]

@@ -3758,7 +3758,6 @@ void MONITOR_WriteMemory(FILE *fp)
             count--;
         }
 		fputs("\n",fp);
-        printf("count: %i\n", count);
 	} while (count > 0);
 }
 
