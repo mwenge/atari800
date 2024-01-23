@@ -3718,7 +3718,12 @@ typedef struct {
 void MONITOR_WriteMemory(FILE *fp)
 {
     static const from_to_addr addresses[] = {
-        {0x8280, 0x9EA0},
+        /* Screen data*/
+        {0x7000, 0x8000},
+        /* Display lists*/
+        {0x8000, 0x9000},
+        /* Control bytes*/
+        {0xD000, 0xE000},
         {0x0000, 0x0000}
     };
 	const from_to_addr *p = NULL;
@@ -3728,7 +3733,7 @@ void MONITOR_WriteMemory(FILE *fp)
         do {
             int j;
             fprintf(fp, "%04X: ", from_addr);
-            for (j = 0; j < 80; j++) {
+            for (j = 0; j < 32; j++) {
                 fprintf(fp, "%02X ", MEMORY_SafeGetByte(from_addr));
                 (from_addr)++;
             }
