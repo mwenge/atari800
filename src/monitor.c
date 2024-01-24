@@ -3721,9 +3721,9 @@ void MONITOR_WriteMemory(FILE *fp)
         /* Screen data*/
         {0x7000, 0x8000},
         /* Display lists*/
-        {0x8000, 0x9000},
-        /* Control bytes*/
-        {0xD000, 0xE000},
+        {0x8000, 0x8400},
+        /* Color bytes*/
+        {0x02C0, 0x02C8},
         {0x0000, 0x0000}
     };
 	const from_to_addr *p = NULL;
