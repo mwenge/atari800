@@ -3733,7 +3733,7 @@ void MONITOR_WriteMemory(FILE *fp)
         do {
             int j;
             fprintf(fp, "%04X: ", from_addr);
-            for (j = 0; j < 32; j++) {
+            for (j = 0; j < 40; j++) {
                 fprintf(fp, "%02X ", MEMORY_SafeGetByte(from_addr));
                 (from_addr)++;
             }
