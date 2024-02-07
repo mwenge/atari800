@@ -3725,7 +3725,7 @@ void MONITOR_WriteMemory(FILE *fp)
         /* Color bytes*/
         {0x02C0, 0x02C8},
         /* Explosion Mode*/
-        {0x4EA2, 0x4EA3},
+        {0x00B6, 0x00B7},
         {0x0000, 0x0000}
     };
 	const from_to_addr *p = NULL;
